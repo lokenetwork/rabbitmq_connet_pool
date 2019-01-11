@@ -74,7 +74,7 @@ serv_accept(int listenfd, uid_t *uidptr)
     char				*name;
 
     /* allocate enough space for longest name plus terminating null */
-    if ((name = malloc(sizeof(un.sun_path + 1))) == NULL)
+    if ((name = malloc(sizeof(un.sun_path) + 1)) == NULL)
         return(-1);
     len = sizeof(un);
     if ((clifd = accept(listenfd, (struct sockaddr *)&un, &len)) < 0) {
