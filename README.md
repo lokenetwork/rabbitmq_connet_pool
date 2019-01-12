@@ -18,4 +18,6 @@ amqp_amqp_consumer 是 消费者端程序 。
 
 注意事项：
 
-如果程序找不到 config.ini 配置文件，需要把这个文件复制到 执行程序的同一个目录。
+程序依赖 curl.h ，要先到 http://curl.haxx.se/download/ 安装curl。
+
+程序在ubuntu 14.4 经过测试。其他环境编译有可能不太兼容。
