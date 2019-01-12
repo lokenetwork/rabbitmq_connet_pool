@@ -1,4 +1,0 @@
-/home/loken/ClionProjects/rabbitmq_connect_pool/build/examples/CMakeFiles/amqp_con_pool.dir
-/home/loken/ClionProjects/rabbitmq_connect_pool/build/examples/CMakeFiles/amqp_consumer.dir
-/home/loken/ClionProjects/rabbitmq_connect_pool/build/librabbitmq/CMakeFiles/rabbitmq.dir
-/home/loken/ClionProjects/rabbitmq_connect_pool/build/librabbitmq/CMakeFiles/rabbitmq-static.dir

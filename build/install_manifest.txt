@@ -1,9 +1,0 @@
-/usr/local/lib/x86_64-linux-gnu/pkgconfig/librabbitmq.pc
-/usr/local/lib/x86_64-linux-gnu/librabbitmq.so.4.3.1
-/usr/local/lib/x86_64-linux-gnu/librabbitmq.so.4
-/usr/local/lib/x86_64-linux-gnu/librabbitmq.so
-/usr/local/lib/x86_64-linux-gnu/librabbitmq.a
-/usr/local/include/amqp.h
-/usr/local/include/amqp_framing.h
-/usr/local/include/amqp_tcp_socket.h
-/usr/local/include/amqp_ssl_socket.h
