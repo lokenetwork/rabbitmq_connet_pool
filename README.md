@@ -8,7 +8,7 @@ rabbitmq本地连接池 支持断线自动重连。
 
 消息消费者端也是用C语言实现的，支持推送消息给http api接口。支持rabbitmq心跳检查，断线自动重连。
 
-安装非常简单，cd 到 build 目录，然后执行 "cmake .." 命令，然后再执行 make install，就完成编译了。
+安装非常简单，cd 到 build 目录，然后执行 "cmake .. && make install" 命令，就完成安装了。
 
 amqp_con_pool 是 连接池程序 ，
 
