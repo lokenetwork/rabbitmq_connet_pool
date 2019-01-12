@@ -45,18 +45,19 @@ CMAKE_C_FLAGS:STRING=
 //Flags used by the compiler during debug builds.
 CMAKE_C_FLAGS_DEBUG:STRING=-g
 
-//Flags used by the compiler during release builds for minimum
-// size.
+//Flags used by the compiler during release minsize builds.
 CMAKE_C_FLAGS_MINSIZEREL:STRING=-Os -DNDEBUG
 
-//Flags used by the compiler during release builds.
+//Flags used by the compiler during release builds (/MD /Ob1 /Oi
+// /Ot /Oy /Gs will produce slightly less optimized but smaller
+// files).
 CMAKE_C_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 
-//Flags used by the compiler during release builds with debug info.
+//Flags used by the compiler during Release with Debug Info builds.
 CMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
 
 //Flags used by the linker.
-CMAKE_EXE_LINKER_FLAGS:STRING=
+CMAKE_EXE_LINKER_FLAGS:STRING=' '
 
 //Flags used by the linker during debug builds.
 CMAKE_EXE_LINKER_FLAGS_DEBUG:STRING=
@@ -128,7 +129,7 @@ CMAKE_LINKER:FILEPATH=/usr/bin/ld
 CMAKE_MAKE_PROGRAM:FILEPATH=/usr/bin/make
 
 //Flags used by the linker during the creation of modules.
-CMAKE_MODULE_LINKER_FLAGS:STRING=
+CMAKE_MODULE_LINKER_FLAGS:STRING=' '
 
 //Flags used by the linker during debug builds.
 CMAKE_MODULE_LINKER_FLAGS_DEBUG:STRING=
@@ -158,7 +159,7 @@ CMAKE_PROJECT_NAME:STATIC=rabbitmq-c
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
 
 //Flags used by the linker during the creation of dll's.
-CMAKE_SHARED_LINKER_FLAGS:STRING=
+CMAKE_SHARED_LINKER_FLAGS:STRING=' '
 
 //Flags used by the linker during debug builds.
 CMAKE_SHARED_LINKER_FLAGS_DEBUG:STRING=
@@ -253,10 +254,10 @@ rabbitmq-c_BINARY_DIR:STATIC=/home/loken/ClionProjects/rabbitmq_connect_pool/bui
 rabbitmq-c_SOURCE_DIR:STATIC=/home/loken/ClionProjects/rabbitmq_connect_pool
 
 //Dependencies for the target
-rabbitmq-static_LIB_DEPENDS:STATIC=general;/usr/lib/x86_64-linux-gnu/libssl.so;general;/usr/lib/x86_64-linux-gnu/libcrypto.so;general;rt;general;-pthread;
+rabbitmq-static_LIB_DEPENDS:STATIC=general;/usr/lib/x86_64-linux-gnu/libssl.so;general;/usr/lib/x86_64-linux-gnu/libcrypto.so;general;rt;general;-lpthread;
 
 //Dependencies for the target
-rabbitmq_LIB_DEPENDS:STATIC=general;/usr/lib/x86_64-linux-gnu/libssl.so;general;/usr/lib/x86_64-linux-gnu/libcrypto.so;general;rt;general;-pthread;
+rabbitmq_LIB_DEPENDS:STATIC=general;/usr/lib/x86_64-linux-gnu/libssl.so;general;/usr/lib/x86_64-linux-gnu/libcrypto.so;general;rt;general;-lpthread;
 
 
 ########################
@@ -313,19 +314,19 @@ CMAKE_EXE_LINKER_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_EXPORT_COMPILE_COMMANDS
 CMAKE_EXPORT_COMPILE_COMMANDS-ADVANCED:INTERNAL=1
-//Name of external makefile project generator.
-CMAKE_EXTRA_GENERATOR:INTERNAL=
 //Name of generator.
 CMAKE_GENERATOR:INTERNAL=Unix Makefiles
-//Name of generator platform.
-CMAKE_GENERATOR_PLATFORM:INTERNAL=
 //Name of generator toolset.
 CMAKE_GENERATOR_TOOLSET:INTERNAL=
 //Have symbol pthread_create
 CMAKE_HAVE_LIBC_CREATE:INTERNAL=
+//Have library pthreads
+CMAKE_HAVE_PTHREADS_CREATE:INTERNAL=
+//Have library pthread
+CMAKE_HAVE_PTHREAD_CREATE:INTERNAL=1
 //Have include pthread.h
 CMAKE_HAVE_PTHREAD_H:INTERNAL=1
-//Source directory with the top level CMakeLists.txt file for this
+//Start directory with the top level CMakeLists.txt file for this
 // project
 CMAKE_HOME_DIRECTORY:INTERNAL=/home/loken/ClionProjects/rabbitmq_connect_pool
 //ADVANCED property for variable: CMAKE_INSTALL_BINDIR
@@ -378,8 +379,6 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
 CMAKE_NUMBER_OF_LOCAL_GENERATORS:INTERNAL=3
-//number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=3
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -429,7 +428,7 @@ DOXYGEN_DOT_EXECUTABLE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: DOXYGEN_EXECUTABLE
 DOXYGEN_EXECUTABLE-ADVANCED:INTERNAL=1
 //Details about finding OpenSSL
-FIND_PACKAGE_MESSAGE_DETAILS_OpenSSL:INTERNAL=[/usr/lib/x86_64-linux-gnu/libssl.so;/usr/lib/x86_64-linux-gnu/libcrypto.so][/usr/include][v1.0.1f(0.9.8)]
+FIND_PACKAGE_MESSAGE_DETAILS_OpenSSL:INTERNAL=[/usr/lib/x86_64-linux-gnu/libssl.so;/usr/lib/x86_64-linux-gnu/libcrypto.so][/usr/include][v1.1.1a(0.9.8)]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 //Have symbol getaddrinfo
@@ -480,10 +479,6 @@ POPT_LIBRARY-ADVANCED:INTERNAL=1
 POSIX_SPAWNP_NEEDS_LIBRT:INTERNAL=1
 //ADVANCED property for variable: REGENERATE_AMQP_FRAMING
 REGENERATE_AMQP_FRAMING-ADVANCED:INTERNAL=1
-//Result of TRY_COMPILE
-THREADS_HAVE_PTHREAD_ARG:INTERNAL=TRUE
-//Result of TRY_RUN
-THREADS_PTHREAD_ARG:INTERNAL=2
 //ADVANCED property for variable: XMLTO_EXECUTABLE
 XMLTO_EXECUTABLE-ADVANCED:INTERNAL=1
 _OPENSSL_CFLAGS:INTERNAL=
@@ -506,7 +501,7 @@ _OPENSSL_STATIC_CFLAGS:INTERNAL=
 _OPENSSL_STATIC_CFLAGS_I:INTERNAL=
 _OPENSSL_STATIC_CFLAGS_OTHER:INTERNAL=
 _OPENSSL_STATIC_INCLUDE_DIRS:INTERNAL=
-_OPENSSL_STATIC_LDFLAGS:INTERNAL=-lssl;-lcrypto;-ldl
+_OPENSSL_STATIC_LDFLAGS:INTERNAL=-pthread;-lssl;-lcrypto;-ldl
 _OPENSSL_STATIC_LDFLAGS_OTHER:INTERNAL=
 _OPENSSL_STATIC_LIBDIR:INTERNAL=
 _OPENSSL_STATIC_LIBRARIES:INTERNAL=ssl;crypto;dl
@@ -515,12 +510,11 @@ _OPENSSL_STATIC_LIBS:INTERNAL=
 _OPENSSL_STATIC_LIBS_L:INTERNAL=
 _OPENSSL_STATIC_LIBS_OTHER:INTERNAL=
 _OPENSSL_STATIC_LIBS_PATHS:INTERNAL=
-_OPENSSL_VERSION:INTERNAL=1.0.1f
+_OPENSSL_VERSION:INTERNAL=1.1.1a
 _OPENSSL_openssl_INCLUDEDIR:INTERNAL=
 _OPENSSL_openssl_LIBDIR:INTERNAL=
 _OPENSSL_openssl_PREFIX:INTERNAL=
 _OPENSSL_openssl_VERSION:INTERNAL=
 __pkg_config_checked_PC_POPT:INTERNAL=1
 __pkg_config_checked__OPENSSL:INTERNAL=1
-prefix_result:INTERNAL=/usr/lib/x86_64-linux-gnu
 

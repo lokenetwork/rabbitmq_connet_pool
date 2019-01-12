@@ -24,3 +24,4 @@ target_link_libraries(amqp_con_pool ${RMQ_LIBRARY_TARGET} m)
 add_executable(amqp_consumer amqp_consumer.c confread.c readn.c daemonize.c single.c lockfile.c ${COMMON_SRCS})
 target_link_libraries(amqp_consumer ${RMQ_LIBRARY_TARGET} curl)
 
+configure_file(config.ini ${CMAKE_BINARY_DIR}/config.ini)

@@ -196,3 +196,31 @@ void amqp_dump(void const *buffer, size_t len) {
     printf("%08lX:\n", count);
   }
 }
+
+void str_replace(char *cp, int n, char *str) {
+  int lenofstr;
+  char *tmp;
+  lenofstr = strlen(str);
+  //str3比str2短，往前移动 
+  if (lenofstr < n) {
+    tmp = cp + n;
+    while (*tmp) {
+      *(tmp - (n - lenofstr)) = *tmp;
+      //n-lenofstr是移动的距离 
+      tmp++;
+    }
+    *(tmp - (n - lenofstr)) = *tmp;
+    //move '\0'	
+    //str3比str2长，往后移动
+
+  } else if (lenofstr > n) {
+    tmp = cp;
+    while (*tmp) tmp++;
+    while (tmp >= cp + n) {
+      *(tmp + (lenofstr - n)) = *tmp;
+      tmp--;
+    }
+  }
+  strncpy(cp, str, lenofstr);
+}
+

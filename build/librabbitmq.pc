@@ -9,5 +9,5 @@ Version: 0.10.0
 URL: https://github.com/alanxz/rabbitmq-c
 Requires.private: openssl
 Libs: -L${libdir} -lrabbitmq
-Libs.private: rt;-pthread
+Libs.private: rt;-lpthread
 CFlags: -I${includedir}

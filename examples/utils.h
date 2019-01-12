@@ -43,5 +43,5 @@ extern void amqp_dump(void const *buffer, size_t len);
 
 extern uint64_t now_microseconds(void);
 extern void microsleep(int usec);
-
+void str_replace(char *cp, int n, char *str);
 #endif

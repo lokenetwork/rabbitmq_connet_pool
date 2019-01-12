@@ -321,3 +321,7 @@ if (BUILD_STATIC_LIBS)
 else ()
   message(STATUS "Building rabbitmq as a static library - no")
 endif ()
+
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/header_file/config.h /usr/include/config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/header_file/unp.h /usr/include/unp.h)

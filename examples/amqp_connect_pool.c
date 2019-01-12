@@ -9,6 +9,7 @@
 #include <sys/epoll.h>
 #include <zconf.h>
 #include <pwd.h>
+#include <limits.h>
 
 #include "list.h"
 #include "confread.h"
@@ -41,10 +42,18 @@ int deamon = 0;
 
 
 int load_config(void){
+    char exe_name[] = "/amqp_con_pool";
+
+    char config_dir[1024] = {0};
+    int n = readlink("/proc/self/exe", config_dir, 1024);
+    char * exe_p = strstr(config_dir,exe_name);
+    str_replace(exe_p,strlen(exe_name),"/../config.ini");
+    printf("dir: %s, n is %d\n", config_dir,n);
+
     struct confread_file *configFile;
     struct confread_section *rootSect = 0;
 
-    if (!(configFile = confread_open("./config.ini"))) {
+    if (!(configFile = confread_open(config_dir))) {
         die("Config open failed\n");
         return -1;
     }
@@ -68,14 +77,15 @@ int load_config(void){
 }
 
 amqp_connection_state_t get_rabbitmq_connect(int * connect_broken){
-    int status,i,fail=-1,success=1;
+    int status;
     amqp_connection_state_t conn;
     amqp_socket_t *socket = NULL;
     conn = amqp_new_connection();
     socket = amqp_tcp_socket_new(conn);
     if (!socket) {
         *connect_broken = 0;
-        return 0;
+        syslog(LOG_ERR, "amqp_tcp_socket_new faild ");
+        goto resutl;
     }
 
     struct timeval time_out;
@@ -86,35 +96,44 @@ amqp_connection_state_t get_rabbitmq_connect(int * connect_broken){
     if (status) {
         *connect_broken = 1;
         //die_on_error(amqp_destroy_connection(conn), "OPEN Ending connection");
-        return 0;
+        syslog(LOG_ERR, "amqp_socket_open_noblock faild ");
+        goto resutl;
     }else{
         *connect_broken = 0;
     }
 
     amqp_rpc_reply_t amqp_login_status = amqp_login(conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, rabbitmq_user, rabbitmq_pwd);
     if( AMQP_RESPONSE_NORMAL != amqp_login_status.reply_type ){
-        return fail;
+        *connect_broken = 1;
+        syslog(LOG_ERR, "amqp_login faild ");
+        goto resutl;
     }
     amqp_rpc_reply_t amqp_status;
     amqp_channel_open(conn, 1);
     amqp_status = amqp_get_rpc_reply(conn);
     if( AMQP_RESPONSE_NORMAL != amqp_status.reply_type ){
-        return fail;
+        *connect_broken = 1;
+        syslog(LOG_ERR, "amqp_channel_open faild ");
+        goto resutl;
     }
 
     amqp_confirm_select(conn,1);
     amqp_status  = amqp_get_rpc_reply(conn);
     if( AMQP_RESPONSE_NORMAL != amqp_status.reply_type ){
-        return fail;
+        *connect_broken = 1;
+        syslog(LOG_ERR, "amqp_confirm_select faild ");
+        goto resutl;
     }
     amqp_queue_bind(conn, 1, amqp_cstring_bytes(queue),
                     amqp_cstring_bytes("amq.direct"), amqp_cstring_bytes("testqueue"),
                     amqp_empty_table);
     amqp_status  = amqp_get_rpc_reply(conn);
     if( AMQP_RESPONSE_NORMAL != amqp_status.reply_type ){
-        return fail;
+        *connect_broken = 1;
+        syslog(LOG_ERR, "amqp_queue_bind faild ");
+        goto resutl;
     }
-
+    resutl:
     return conn;
 }
 
@@ -126,7 +145,7 @@ int worker(void *arg) {
 
     //跟父进程进行domain socket 通信。
     int fu_fd = cli_conn(fuzi_socket_path);
-    printf(" fu_fd is %d\n",fu_fd);
+    printf(" fu_fd is %d --- %s\n",fu_fd,(char *)arg);
 
     int NEVENTS = 10240;
     struct epoll_event ev, ev_ret[NEVENTS];
@@ -199,7 +218,10 @@ int worker(void *arg) {
             if( 1 == *connect_broken ){
                 syslog(LOG_ERR, "connect_broken Publishing faild  %s ", body);
                 free(body);
-                write(true_cgi_fd, &fail, sizeof(int));
+                int w_num = write(true_cgi_fd, &fail, sizeof(int));
+                if( w_num != sizeof(int) ){
+                    syslog(LOG_ERR, " write true_cgi_fd faild faild  " );
+                }
                 close(true_cgi_fd);
                 break;
             }
@@ -227,7 +249,10 @@ int worker(void *arg) {
                 if( 1 == *connect_broken ){
                     syslog(LOG_ERR, "connect_broken Publishing faild  %s ", body);
                     free(body);
-                    write(true_cgi_fd, &fail, sizeof(int));
+                    int w_num = write(true_cgi_fd, &fail, sizeof(int));
+                    if( w_num != sizeof(int) ){
+                        syslog(LOG_ERR, " write true_cgi_fd faild faild  " );
+                    }
                     close(true_cgi_fd);
                     break;
                 }
@@ -241,7 +266,10 @@ int worker(void *arg) {
                 syslog(LOG_ERR, "Second Publishing faild  %s %s", body,
                        amqp_error_string2(publish_ret));
                 //返回给PHP端失败
-                write(true_cgi_fd, &fail, sizeof(int));
+                int w_num = write(true_cgi_fd, &fail, sizeof(int));
+                if( w_num != sizeof(int) ){
+                    syslog(LOG_ERR, " write true_cgi_fd faild faild  " );
+                }
             } else {
                 amqp_frame_t frame;
                 struct timeval time_out;
@@ -254,7 +282,10 @@ int worker(void *arg) {
 
                     // Message successfully delivered
                     //返回给PHP端成功
-                    write(true_cgi_fd, &success, sizeof(int));
+                    int w_num = write(true_cgi_fd, &success, sizeof(int));
+                    if( w_num != sizeof(int) ){
+                        syslog(LOG_ERR, " write true_cgi_fd success faild  " );
+                    }
 
                     //超时了，链接可能断了，重新链接，再次发信息
                 }else{
@@ -265,7 +296,10 @@ int worker(void *arg) {
                     if( 1 == *connect_broken  ){
                         syslog(LOG_ERR, "connect_broken Publishing faild  %s ", body);
                         free(body);
-                        write(true_cgi_fd, &fail, sizeof(int));
+                        int w_num = write(true_cgi_fd, &fail, sizeof(int));
+                        if( w_num != sizeof(int) ){
+                            syslog(LOG_ERR, " write true_cgi_fd faild faild  " );
+                        }
                         close(true_cgi_fd);
                         break;
                     }
@@ -277,18 +311,28 @@ int worker(void *arg) {
                         syslog(LOG_ERR, "NEXT Publishing faild  %s %s", body,
                                amqp_error_string2(publish_ret));
                         //返回给PHP端失败
-                        write(true_cgi_fd, &fail, sizeof(int));
+                        int w_num = write(true_cgi_fd, &fail, sizeof(int));
+                        if( w_num != sizeof(int) ){
+                            syslog(LOG_ERR, " write true_cgi_fd faild faild  " );
+                        }
                     }else{
                         ack_res = amqp_simple_wait_frame_noblock(conn, &frame,&time_out);
                         printf("ack_res is %d %s\n",ack_res, amqp_error_string2(ack_res));
 
                         if( AMQP_STATUS_OK == ack_res && frame.payload.method.id == AMQP_BASIC_ACK_METHOD ){
                             //返回给PHP端成功
-                            write(true_cgi_fd, &success, sizeof(int));
+                            int w_num = write(true_cgi_fd, &success, sizeof(int));
+                            if( w_num != sizeof(int) ){
+                                syslog(LOG_ERR, " write true_cgi_fd success faild  " );
+                            }
+
                         }else{
                             syslog(LOG_ERR, "NEXT ACK CONFIRM faild  %s %s", body, amqp_error_string2(ack_res));
                             //返回给PHP端失败
-                            write(true_cgi_fd, &fail, sizeof(int));
+                            int w_num = write(true_cgi_fd, &fail, sizeof(int));
+                            if( w_num != sizeof(int) ){
+                                syslog(LOG_ERR, " write true_cgi_fd faild faild  " );
+                            }
                         }
                     }
 
@@ -337,7 +381,7 @@ int main(int argc, char *argv[]) {
          * Become a daemon.
          */
         daemonize(cmd);
-        extern int already_running();
+        extern int already_running(void);
         /*
          * Make sure only one copy of the daemon is running.
          */

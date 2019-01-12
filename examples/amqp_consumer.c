@@ -68,11 +68,20 @@ char const *http_api;
 int deamon = 0;
 
 
+
 int load_config(void){
+    char exe_name[] = "/amqp_consumer";
+
+    char config_dir[1024] = {0};
+    int n = readlink("/proc/self/exe", config_dir, 1024);
+    char * exe_p = strstr(config_dir,exe_name);
+    str_replace(exe_p,strlen(exe_name),"/../config.ini");
+    printf("dir: %s -- n is %d\n", config_dir,n);
+
     struct confread_file *configFile;
     struct confread_section *rootSect = 0;
 
-    if (!(configFile = confread_open("./config.ini"))) {
+    if (!(configFile = confread_open(config_dir))) {
         die("Config open failed\n");
         return -1;
     }
@@ -93,12 +102,14 @@ int load_config(void){
 
     printf("http_api is %s\n",http_api);
 
+
     return 0;
 
 }
 
+
 int get_rabbitmq_connect( amqp_connection_state_t * return_conn){
-    int status,i,fail=-1,success=1;
+    int status,fail=-1,success=1;
     amqp_socket_t *socket = NULL;
     amqp_connection_state_t  conn;
     conn = amqp_new_connection();
@@ -158,7 +169,7 @@ size_t save_http_data(void *ptr, size_t size, size_t nmemb, void *stream)
     return size*nmemb;
 }
 
-char *  send_post(char *url, char *data) {
+char *  send_post(char const *url, char *data) {
     CURL *curl;
     CURLcode res;
     curl = curl_easy_init();
@@ -173,7 +184,7 @@ char *  send_post(char *url, char *data) {
         res = curl_easy_perform(curl);
         curl_easy_cleanup(curl);
 
-        printf("curl_res is %s\n",curl_res);
+        printf("curl_res is %s --  res is %d \n",curl_res,res);
     }
     return curl_res;
 }
@@ -282,10 +293,10 @@ static void run(amqp_connection_state_t conn) {
         char * http_res = send_post(http_api,body);
         if( NULL != strstr(http_res,"success") ){
             printf("here 1\n");
-            int ack_ret = amqp_basic_ack(conn,envelope.channel,envelope.delivery_tag,0);
+            amqp_basic_ack(conn,envelope.channel,envelope.delivery_tag,0);
         }else{
             printf("here 2\n");
-            int nack_ret = amqp_basic_nack(conn,envelope.channel,envelope.delivery_tag,0,1);
+            amqp_basic_nack(conn,envelope.channel,envelope.delivery_tag,0,1);
         }
 
         amqp_destroy_envelope(&envelope);
